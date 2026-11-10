@@ -6,6 +6,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -20,7 +21,12 @@ ADMIN_ID = 1410351628  # Ваш числовой Telegram ID
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
+redis_url = os.getenv("REDIS_URL")
+if os.getenv("VERCEL") == "1" and not redis_url:
+    raise RuntimeError("REDIS_URL must be configured on Vercel for persistent bot state")
+
+storage = RedisStorage.from_url(redis_url) if redis_url else MemoryStorage()
+dp = Dispatcher(storage=storage)
 
 
 class Form(StatesGroup):
