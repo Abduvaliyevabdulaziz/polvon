@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
@@ -13,7 +14,7 @@ from aiogram.types import (
 )
 
 # ----------------- КОНФИГУРАЦИЯ -----------------
-BOT_TOKEN = "9091596098:AAFmExL612_Ey6ZTyQO2zKvubkAC34vNx1Q"
+BOT_TOKEN = os.environ["BOT_TOKEN"]
 ADMIN_ID = 1410351628  # Ваш числовой Telegram ID
 # ------------------------------------------------
 
