@@ -1,3 +1,5 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 import hmac
 import json
 import os
@@ -9,8 +11,25 @@ from pydantic import ValidationError
 from bot import bot, dp
 
 
-WEBHOOK_SECRET = os.environ["WEBHOOK_SECRET"]
-app = FastAPI()
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET")
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    if os.getenv("VERCEL_ENV") == "production":
+        production_url = os.environ.get("VERCEL_PROJECT_PRODUCTION_URL")
+        if not production_url:
+            raise RuntimeError("VERCEL_PROJECT_PRODUCTION_URL is required in production")
+        if not WEBHOOK_SECRET:
+            raise RuntimeError("WEBHOOK_SECRET is required in production")
+        await bot.set_webhook(
+            url=f"https://{production_url}/webhook",
+            secret_token=WEBHOOK_SECRET,
+        )
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
@@ -23,6 +42,8 @@ async def telegram_webhook(
     request: Request,
     secret_token: str | None = Header(default=None, alias="X-Telegram-Bot-Api-Secret-Token"),
 ):
+    if not WEBHOOK_SECRET:
+        raise HTTPException(status_code=503, detail="Webhook secret is not configured")
     if not hmac.compare_digest(secret_token or "", WEBHOOK_SECRET):
         raise HTTPException(status_code=403, detail="Invalid webhook secret")
 

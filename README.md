@@ -12,15 +12,9 @@ conversation state survives separate serverless function invocations.
      digits, `_`, or `-`.
    - `REDIS_URL`: the Redis connection URL (`redis://` or `rediss://`) from an
      Upstash Redis database.
-3. Redeploy after saving the environment variables.
-4. On your computer, set the same bot token and webhook secret, and set
-   `APP_URL` to your deployed HTTPS URL. In PowerShell, then run:
-
-   ```powershell
-   $env:BOT_TOKEN = "<your-bot-token>"
-   $env:WEBHOOK_SECRET = "<same-webhook-secret>"
-   $env:APP_URL = "https://<your-project>.vercel.app"
-   python set_webhook.py
-   ```
+3. Ensure **System Environment Variables** are enabled for the project.
+4. Redeploy after saving the environment variables.
+5. Open the production deployment URL once. On its first request, the app
+   registers the Telegram webhook using Vercel's production URL automatically.
 
 The webhook endpoint is `/webhook`. The root URL returns a small health check.
